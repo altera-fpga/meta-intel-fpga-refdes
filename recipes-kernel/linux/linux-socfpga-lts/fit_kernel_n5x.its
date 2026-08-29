@@ -1,0 +1,51 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2026 Altera Corporation
+ *
+ * N5X kernel FIT (formerly produced by U-Boot binman; binman kernel node
+ * deleted in socfpga_v2026.07). Matches prior binman layout: uncompressed
+ * Image + socdk DTB at 0x6000000.
+ */
+/dts-v1/;
+/ {
+	description = "FIT with Linux kernel image and FDT blob";
+	#address-cells = <1>;
+	images {
+		kernel {
+			description = "Linux Kernel";
+			data = /incbin/("./Image");
+			type = "kernel";
+			arch = "arm64";
+			os = "linux";
+			compression = "none";
+			load = <0x6000000>;
+			entry = <0x6000000>;
+			hash {
+				algo = "crc32";
+			};
+		};
+		fdt-0 {
+			description = "socfpga_n5x_socdk";
+			data = /incbin/("./socfpga_n5x_socdk.dtb");
+			type = "flat_dt";
+			arch = "arm64";
+			compression = "none";
+			hash {
+				algo = "crc32";
+			};
+		};
+	};
+	configurations {
+		default = "conf";
+		conf {
+			description = "N5X SOCDK";
+			kernel = "kernel";
+			fdt = "fdt-0";
+			signature {
+				algo = "crc32";
+				key-name-hint = "dev";
+				sign-images = "fdt-0", "kernel";
+			};
+		};
+	};
+};

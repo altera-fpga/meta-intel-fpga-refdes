@@ -21,6 +21,7 @@ SRC_URI:append:agilex5_dk_a5e013bb32aes_5s = " ${@bb.utils.contains('IMAGE_TYPE'
 SRC_URI:append:agilex5_mk_a5e065bb32aes1 = " file://fit_kernel_agilex5_mk_a5e065bb32aes1.its ${@bb.utils.contains('HYP_BUILD', '1', 'file://xen.scc', '', d)}"
 SRC_URI:append:agilex3 = " file://fit_kernel_agilex3.its ${@bb.utils.contains('HYP_BUILD', '1', 'file://xen.scc', '', d)}"
 SRC_URI:append:stratix10_htile = " file://fit_kernel_stratix10_htile.its"
+SRC_URI:append:n5x = " file://fit_kernel_n5x.its"
 
 SRC_URI:append:arria10 = " \
 			${@bb.utils.contains("IMAGE_TYPE", "gsrd", "file://0001-socfpga_arria10_socdk-include-reference-design-dtsi.patch", "", d)} \
@@ -120,6 +121,8 @@ do_deploy:append() {
 			cp ${DEPLOY_DIR_IMAGE}/${MACHINE}_${IMAGE_TYPE}_ghrd/sgmii.core.rbf ${B}
 			cp ${DEPLOY_DIR_IMAGE}/${MACHINE}_${IMAGE_TYPE}_ghrd/ghrd_pr.core.rbf ${B}
 		fi
+	elif [ "${MACHINE}" = "n5x" ]; then
+		cp ${LINUXDEPLOYDIR}/socfpga_n5x_socdk.dtb ${B}
 	elif [[ "${MACHINE}" == "agilex5" ]]; then
 		# linux.dtb
 		cp ${LINUXDEPLOYDIR}/socfpga_${MACHINE}_socdk.dtb ${B}/socfpga_${MACHINE}_socdk.dtb
@@ -227,6 +230,13 @@ do_deploy:append() {
 		install -m 744 ${B}/fit_kernel_${MACHINE}.its ${DEPLOYDIR}
 		install -m 744 ${B}/kernel.itb ${DEPLOYDIR}
 		install -m 744 ${B}/Image.lzma ${DEPLOYDIR}
+	elif [ "${MACHINE}" = "n5x" ]; then
+		# Uncompressed Image FIT (matches former U-Boot binman kernel.itb)
+		cp ${UNPACKDIR}/fit_kernel_${MACHINE}.its ${B}
+		cp ${LINUXDEPLOYDIR}/Image ${B}
+		mkimage -f ${B}/fit_kernel_${MACHINE}.its ${B}/kernel.itb
+		install -m 744 ${B}/fit_kernel_${MACHINE}.its ${DEPLOYDIR}
+		install -m 744 ${B}/kernel.itb ${DEPLOYDIR}
 	fi
 }
 
