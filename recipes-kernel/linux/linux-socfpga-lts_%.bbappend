@@ -224,8 +224,17 @@ do_deploy:append() {
 			rm ${B}/Image.lzma
 		fi
 		xz --format=lzma ${B}/Image
-		# Generate kernel.itb
-		mkimage -f ${B}/fit_kernel_${MACHINE}.its ${B}/kernel.itb
+		# Generate kernel.itb. The fit_kernel_*.its files declare RSA
+		# signatures (key-name-hint = "dev"); mkimage -k <keydir> -r
+		# actually signs the configurations and marks the key required so
+		# U-Boot (CONFIG_FIT_SIGNATURE) rejects an unsigned/tampered kernel
+		# FIT. UBOOT_SIGN_KEYDIR defaults to the dev key in
+		# meta-intel-fpga-refdes (files/keys/README.md); override for
+		# production.
+		if [ "${UBOOT_SIGN_KEYDIR%/}" = "${SOCFPGA_REFDES_DEV_KEYDIR%/}" ]; then
+			bbwarn "UBOOT_SIGN_KEYDIR is the committed GSRD development key (${UBOOT_SIGN_KEYDIR}/${UBOOT_SIGN_KEYNAME}). This is NOT a security boundary — override UBOOT_SIGN_KEYDIR/UBOOT_SIGN_KEYNAME for production (see files/keys/README.md)."
+		fi
+		mkimage -f ${B}/fit_kernel_${MACHINE}.its -k "${UBOOT_SIGN_KEYDIR}" -r ${B}/kernel.itb
 		# Deploy kernel.its, kernel.itb and Image.lzma
 		install -m 744 ${B}/fit_kernel_${MACHINE}.its ${DEPLOYDIR}
 		install -m 744 ${B}/kernel.itb ${DEPLOYDIR}

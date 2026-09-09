@@ -8,16 +8,30 @@
 
 / {
     description = "FIT image for u-boot script";
+    #address-cells = <1>;
+
     images {
-         default = "script";
-         script {
-             description = "u-boot script";
-             data = /incbin/("./uboot.txt");
-             type = "script";
-             compression = "none";
-             hash {
-                 algo = "crc32";
-             };
+        script {
+            description = "u-boot script";
+            data = /incbin/("./uboot.txt");
+            type = "script";
+            compression = "none";
+            hash-1 {
+                algo = "sha256";
+            };
+        };
+    };
+
+    configurations {
+        default = "conf-1";
+        conf-1 {
+            description = "Boot script configuration";
+            script = "script";
+            signature-1 {
+                algo = "sha256,rsa2048";
+                key-name-hint = "dev";
+                sign-images = "script";
+            };
         };
     };
 };

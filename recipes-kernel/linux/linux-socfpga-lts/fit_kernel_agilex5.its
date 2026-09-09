@@ -21,7 +21,7 @@
 			load = <0x86000000>;
 			entry = <0x86000000>;
 			hash {
-				algo = "crc32";
+				algo = "sha256";
 			};
 		};
 
@@ -32,7 +32,7 @@
 			arch = "arm64";
 			compression = "none";
 			hash {
-				algo = "crc32";
+				algo = "sha256";
 			};
 		};
 	};
@@ -45,9 +45,9 @@
 			kernel = "kernel";
 			fdt = "fdt-0";
 			signature {
-				algo = "crc32";
+				algo = "sha256,rsa2048";
 				key-name-hint = "dev";
-				sign-images = "fdt-0", "kernel";
+				sign-images = "kernel", "fdt";
 			};
 		};
 	};

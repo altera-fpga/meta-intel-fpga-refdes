@@ -6,6 +6,14 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 DEPENDS = "u-boot-mkimage-native dtc-native"
 
+# The SoC64 boot script (boot.scr) is packaged as a signed FIT: the .its files
+# carry a 'configurations' node with an RSA signature, and mkimage -k <keydir>
+# -r signs it and marks the key required. U-Boot proper (built with
+# CONFIG_BOOTSCR_FIT_SIGNATURE) then refuses to 'source' an unsigned or
+# tampered boot.scr. UBOOT_SIGN_KEYDIR/UBOOT_SIGN_KEYNAME default to the
+# development key in this layer (see files/keys/README.md) and must be
+# overridden with a private key for production.
+
 inherit deploy nopackages
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
@@ -43,90 +51,109 @@ S = "${UNPACKDIR}/sources-unpack"
 do_configure[noexec] = "1"
 do_install[noexec] = "1"
 
+# Warn once per signing task when the committed GSRD development key is used.
+# Call from every do_compile* that runs mkimage -k (machine overrides replace
+# the default do_compile, so the warn must not live only in the default).
+socfpga_warn_if_dev_fit_key() {
+	if [ "${UBOOT_SIGN_KEYDIR%/}" = "${SOCFPGA_REFDES_DEV_KEYDIR%/}" ]; then
+		bbwarn "UBOOT_SIGN_KEYDIR is the committed GSRD development key (${UBOOT_SIGN_KEYDIR}/${UBOOT_SIGN_KEYNAME}). This is NOT a security boundary — override UBOOT_SIGN_KEYDIR/UBOOT_SIGN_KEYNAME for production (see files/keys/README.md)."
+	fi
+}
+
 do_compile:n5x() {
 	mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n "N5X Script" -d "${UNPACKDIR}/${MACHINE}_u-boot.txt" ${UNPACKDIR}/u-boot.scr
 }
 
 do_compile() {
+	socfpga_warn_if_dev_fit_key
 	if [[ "${MACHINE}" == *"agilex7_"* ]]; then
-		mkimage -f "${UNPACKDIR}/uboot_script.its" ${UNPACKDIR}/boot.scr.uimg
+		mkimage -f "${UNPACKDIR}/uboot_script.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.uimg
 		export HYP_BUILD="${@bb.utils.contains('HYP_BUILD', '1', '1', '0', d)}"
 		if [[ "${HYP_BUILD}" = "1" ]]; then
-			mkimage -f "${UNPACKDIR}/agilex7_uboot_script_xen.its" ${UNPACKDIR}/boot.scr.xen.uimg
+			mkimage -f "${UNPACKDIR}/agilex7_uboot_script_xen.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.xen.uimg
 		fi
 	fi
 }
 
 do_compile:agilex5() {
-	mkimage -f "${UNPACKDIR}/agilex5_uboot_script.its" ${UNPACKDIR}/boot.scr.uimg
+	socfpga_warn_if_dev_fit_key
+	mkimage -f "${UNPACKDIR}/agilex5_uboot_script.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.uimg
 }
 
 do_compile:agilex5_dk_a5e065bb32aes1() {
-	mkimage -f "${UNPACKDIR}/uboot_script.its" ${UNPACKDIR}/boot.scr.uimg
+	socfpga_warn_if_dev_fit_key
+	mkimage -f "${UNPACKDIR}/uboot_script.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.uimg
 	export HYP_BUILD="${@bb.utils.contains('HYP_BUILD', '1', '1', '0', d)}"
 	if [[ "${HYP_BUILD}" = "1" ]]; then
-		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen.its" ${UNPACKDIR}/boot.scr.xen.uimg
-		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen_emmc.its" ${UNPACKDIR}/boot.scr.xen.emmc.uimg
-		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen_debug.its" ${UNPACKDIR}/boot.scr.xen.debug.uimg
+		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.xen.uimg
+		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen_emmc.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.xen.emmc.uimg
+		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen_debug.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.xen.debug.uimg
 	fi
 }
 
 do_compile:agilex5_dk_a5e065bb32aes1_b0() {
-	mkimage -f "${UNPACKDIR}/uboot_script.its" ${UNPACKDIR}/boot.scr.uimg
+	socfpga_warn_if_dev_fit_key
+	mkimage -f "${UNPACKDIR}/uboot_script.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.uimg
 	export HYP_BUILD="${@bb.utils.contains('HYP_BUILD', '1', '1', '0', d)}"
 	if [[ "${HYP_BUILD}" = "1" ]]; then
-		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen.its" ${UNPACKDIR}/boot.scr.xen.uimg
-		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen_emmc.its" ${UNPACKDIR}/boot.scr.xen.emmc.uimg
-		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen_debug.its" ${UNPACKDIR}/boot.scr.xen.debug.uimg
+		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.xen.uimg
+		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen_emmc.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.xen.emmc.uimg
+		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen_debug.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.xen.debug.uimg
 	fi
 }
 
 do_compile:agilex5_dk_a5e013bm16aea() {
-	mkimage -f "${UNPACKDIR}/uboot_script.its" ${UNPACKDIR}/boot.scr.uimg
+	socfpga_warn_if_dev_fit_key
+	mkimage -f "${UNPACKDIR}/uboot_script.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.uimg
 	export HYP_BUILD="${@bb.utils.contains('HYP_BUILD', '1', '1', '0', d)}"
 	if [[ "${HYP_BUILD}" = "1" ]]; then
-		mkimage -f "${UNPACKDIR}/agilex5_013b_uboot_script_xen.its" ${UNPACKDIR}/boot.scr.xen.uimg
+		mkimage -f "${UNPACKDIR}/agilex5_013b_uboot_script_xen.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.xen.uimg
 	fi
 }
 
 do_compile:agilex5_dk_a5e013bb32aes() {
-	mkimage -f "${UNPACKDIR}/uboot_script.its" ${UNPACKDIR}/boot.scr.uimg
+	socfpga_warn_if_dev_fit_key
+	mkimage -f "${UNPACKDIR}/uboot_script.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.uimg
 	export HYP_BUILD="${@bb.utils.contains('HYP_BUILD', '1', '1', '0', d)}"
 	if [[ "${HYP_BUILD}" = "1" ]]; then
-		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen.its" ${UNPACKDIR}/boot.scr.xen.uimg
-		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen_emmc.its" ${UNPACKDIR}/boot.scr.xen.emmc.uimg
-		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen_debug.its" ${UNPACKDIR}/boot.scr.xen.debug.uimg
+		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.xen.uimg
+		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen_emmc.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.xen.emmc.uimg
+		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen_debug.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.xen.debug.uimg
 	fi
 }
 
 do_compile:agilex5_dk_a5e013bb32aes_5s() {
-	mkimage -f "${UNPACKDIR}/uboot_script.its" ${UNPACKDIR}/boot.scr.uimg
+	socfpga_warn_if_dev_fit_key
+	mkimage -f "${UNPACKDIR}/uboot_script.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.uimg
 	export HYP_BUILD="${@bb.utils.contains('HYP_BUILD', '1', '1', '0', d)}"
 	if [[ "${HYP_BUILD}" = "1" ]]; then
-		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen.its" ${UNPACKDIR}/boot.scr.xen.uimg
-		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen_emmc.its" ${UNPACKDIR}/boot.scr.xen.emmc.uimg
-		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen_debug.its" ${UNPACKDIR}/boot.scr.xen.debug.uimg
+		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.xen.uimg
+		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen_emmc.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.xen.emmc.uimg
+		mkimage -f "${UNPACKDIR}/agilex5_uboot_script_xen_debug.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.xen.debug.uimg
 	fi
 }
 
 do_compile:agilex5_mk_a5e065bb32aes1() {
-	mkimage -f "${UNPACKDIR}/uboot_script.its" ${UNPACKDIR}/boot.scr.uimg
+	socfpga_warn_if_dev_fit_key
+	mkimage -f "${UNPACKDIR}/uboot_script.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.uimg
         export HYP_BUILD="${@bb.utils.contains('HYP_BUILD', '1', '1', '0', d)}"
         if [[ "${HYP_BUILD}" = "1" ]]; then
-                mkimage -f "${UNPACKDIR}/agilex5_modular_uboot_script_xen.its" ${UNPACKDIR}/boot.scr.xen.uimg
+                mkimage -f "${UNPACKDIR}/agilex5_modular_uboot_script_xen.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.xen.uimg
         fi
 }
 
 do_compile:agilex3() {
-	mkimage -f "${UNPACKDIR}/agilex3_uboot_script.its" ${UNPACKDIR}/boot.scr.uimg
+	socfpga_warn_if_dev_fit_key
+	mkimage -f "${UNPACKDIR}/agilex3_uboot_script.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.uimg
 	export HYP_BUILD="${@bb.utils.contains('HYP_BUILD', '1', '1', '0', d)}"
 	if [[ "${HYP_BUILD}" = "1" ]]; then
-		mkimage -f "${UNPACKDIR}/agilex3_uboot_script_xen.its" ${UNPACKDIR}/boot.scr.xen.uimg
+		mkimage -f "${UNPACKDIR}/agilex3_uboot_script_xen.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.xen.uimg
 	fi
 }
 
 do_compile:stratix10_htile() {
-	mkimage -f "${UNPACKDIR}/uboot_script.its" ${UNPACKDIR}/boot.scr.uimg
+	socfpga_warn_if_dev_fit_key
+	mkimage -f "${UNPACKDIR}/uboot_script.its" -k "${UBOOT_SIGN_KEYDIR}" -r ${UNPACKDIR}/boot.scr.uimg
 }
 
 do_compile:cyclone5() {

@@ -21,7 +21,7 @@
 			load = <0x6000000>;
 			entry = <0x6000000>;
 			hash {
-				algo = "crc32";
+				algo = "sha256";
 			};
 		};
 
@@ -32,7 +32,7 @@
 			arch = "arm64";
 			compression = "none";
 			hash {
-				algo = "crc32";
+				algo = "sha256";
 			};
 		};
 
@@ -43,7 +43,7 @@
 			arch = "arm64";
 			compression = "none";
 			hash {
-				algo = "crc32";
+				algo = "sha256";
 			};
 		};
 
@@ -54,7 +54,7 @@
 			arch = "arm64";
 			compression = "none";
 			hash {
-				algo = "crc32";
+				algo = "sha256";
 			};
 		};
 
@@ -65,7 +65,7 @@
 			arch = "arm64";
 			compression = "none";
 			hash {
-				algo = "crc32";
+				algo = "sha256";
 			};
 		};
 
@@ -76,7 +76,7 @@
 			arch = "arm64";
 			compression = "none";
 			hash {
-				algo = "crc32";
+				algo = "sha256";
 			};
 		};
 
@@ -87,7 +87,7 @@
 			arch = "arm64";
 			compression = "none";
 			hash {
-				algo = "crc32";
+				algo = "sha256";
 			};
 		};
 
@@ -99,7 +99,7 @@
 			compression = "none";
 			load = <0xA000000>;
 			hash {
-				algo = "crc32";
+				algo = "sha256";
 			};
 		};
 
@@ -111,7 +111,7 @@
 			compression = "none";
 			load = <0xA000000>;
 			hash {
-				algo = "crc32";
+				algo = "sha256";
 			};
 		};
 
@@ -123,7 +123,7 @@
 			compression = "none";
 			load = <0xA000000>;
 			hash {
-				algo = "crc32";
+				algo = "sha256";
 			};
 		};
 
@@ -135,7 +135,7 @@
 			compression = "none";
 			load = <0xA000000>;
 			hash {
-				algo = "crc32";
+				algo = "sha256";
 			};
 		};
 
@@ -147,7 +147,7 @@
 			compression = "none";
 			load = <0xA000000>;
 			hash {
-				algo = "crc32";
+				algo = "sha256";
 			};
 		};
 	};
@@ -160,9 +160,9 @@
 			kernel = "kernel";
 			fdt = "fdt-0";
 			signature {
-				algo = "crc32";
+				algo = "sha256,rsa2048";
 				key-name-hint = "dev";
-				sign-images = "fdt-0", "kernel";
+				sign-images = "kernel", "fdt";
 			};
 		};
 
@@ -172,9 +172,9 @@
 			fdt = "fdt-1";
 			fpga = "fpga-1";
 			signature {
-				algo = "crc32";
+				algo = "sha256,rsa2048";
 				key-name-hint = "dev";
-				sign-images = "fdt-1", "kernel", "fpga-1";
+				sign-images = "kernel", "fdt", "fpga";
 			};
 		};
 
@@ -184,9 +184,9 @@
 			fdt = "fdt-2";
 			fpga = "fpga-2";
 			signature {
-				algo = "crc32";
+				algo = "sha256,rsa2048";
 				key-name-hint = "dev";
-				sign-images = "fdt-2", "kernel", "fpga-2";
+				sign-images = "kernel", "fdt", "fpga";
 			};
 		};
 
@@ -196,9 +196,9 @@
 			fdt = "fdt-3";
 			fpga = "fpga-3";
 			signature {
-				algo = "crc32";
+				algo = "sha256,rsa2048";
 				key-name-hint = "dev";
-				sign-images = "fdt-3", "kernel", "fpga-3";
+				sign-images = "kernel", "fdt", "fpga";
 			};
 		};
 
@@ -208,9 +208,9 @@
 			fdt = "fdt-4";
 			fpga = "fpga-4";
 			signature {
-				algo = "crc32";
+				algo = "sha256,rsa2048";
 				key-name-hint = "dev";
-				sign-images = "fdt-4", "kernel", "fpga-4";
+				sign-images = "kernel", "fdt", "fpga";
 			};
 		};
 
@@ -220,9 +220,9 @@
 			fdt = "fdt-11";
 			fpga = "fpga-11";
 			signature {
-				algo = "crc32";
+				algo = "sha256,rsa2048";
 				key-name-hint = "dev";
-				sign-images = "fdt-11", "kernel", "fpga-11";
+				sign-images = "kernel", "fdt", "fpga";
 			};
 		};
 	};
